@@ -17,4 +17,13 @@ export class ShortUrlsRepository {
 
     return result.rows[0];
   }
+
+  async get(code: string) {
+    const result = await this.database.query(
+      `SELECT * FROM short_urls WHERE code = $1`,
+      [code],
+    );
+
+    return result.rows[0];
+  }
 }
