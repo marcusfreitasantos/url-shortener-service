@@ -1,5 +1,5 @@
+import 'dotenv/config';
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
-
 import { Pool, QueryResult, QueryResultRow } from 'pg';
 
 @Injectable()

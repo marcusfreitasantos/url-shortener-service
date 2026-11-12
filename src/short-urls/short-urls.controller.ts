@@ -6,6 +6,7 @@ import {
   Req,
   Body,
   Param,
+  HttpCode,
 } from '@nestjs/common';
 import { ShortUrlService } from './short-urls.service.js';
 
@@ -19,7 +20,8 @@ export class ShortUrlController {
   }
 
   @Post('/short-urls')
-  createShortUrl(@Body() body: { url?: string }): string {
+  @HttpCode(201)
+  createShortUrl(@Body() body: { url?: string }) {
     if (typeof body?.url !== 'string' || !body.url.trim()) {
       throw new BadRequestException('O campo "url" é obrigatório.');
     }
