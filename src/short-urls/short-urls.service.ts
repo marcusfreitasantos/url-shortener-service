@@ -1,12 +1,7 @@
-import 'dotenv/config';
-import {
-  Injectable,
-  HttpException,
-  HttpStatus,
-  NotFoundException,
-} from '@nestjs/common';
-import { ShortUrlsRepository } from './short-urls.repository.js';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
+import { ShortUrlsRepository } from './short-urls.repository.js';
 
 const isCodeCollision = (error: unknown): boolean => {
   return (
@@ -21,7 +16,10 @@ const isCodeCollision = (error: unknown): boolean => {
 
 @Injectable()
 export class ShortUrlService {
-  constructor(private readonly repository: ShortUrlsRepository) {}
+  constructor(
+    private readonly repository: ShortUrlsRepository,
+    private readonly config: ConfigService,
+  ) {}
 
   async getShortUrl(code: string): Promise<{
     originalUrl: string;
@@ -47,7 +45,7 @@ export class ShortUrlService {
         await this.repository.create(url, code);
 
         return {
-          shortUrl: `${process.env.DOMAIN_NAME}/${code}`,
+          shortUrl: `${this.config.getOrThrow<string>('DOMAIN_NAME')}/${code}`,
         };
       } catch (error) {
         const isLastAttempt = attempt === maxAttempts - 1;

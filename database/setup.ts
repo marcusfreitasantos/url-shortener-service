@@ -1,15 +1,23 @@
-import 'dotenv/config';
-import { Pool } from 'pg';
 import fs from 'node:fs';
 import path from 'node:path';
+import { Pool } from 'pg';
+import { envSchema } from '../src/config/env.schema.js';
+
+const envPath = path.resolve('.env');
+
+if (fs.existsSync(envPath)) {
+  process.loadEnvFile(envPath);
+}
+
+const env = envSchema.parse(process.env);
 
 async function setup() {
   const pool = new Pool({
-    host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT || 5432),
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
+    host: env.DB_HOST,
+    port: env.DB_PORT,
+    user: env.DB_USER,
+    password: env.DB_PASSWORD,
+    database: env.DB_NAME,
   });
 
   try {
