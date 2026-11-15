@@ -6,6 +6,7 @@ import {
   Body,
   Param,
   HttpCode,
+  Redirect,
 } from '@nestjs/common';
 import { ShortUrlService } from './short-urls.service.js';
 
@@ -14,8 +15,10 @@ export class ShortUrlController {
   constructor(private readonly shortUrlService: ShortUrlService) {}
 
   @Get('/:code')
-  getShortUrl(@Param('code') code: string) {
-    return this.shortUrlService.getShortUrl(code);
+  @Redirect()
+  async getShortUrl(@Param('code') code: string) {
+    const { originalUrl } = await this.shortUrlService.getShortUrl(code);
+    return { url: originalUrl, statusCode: 302 };
   }
 
   @Post('/api/short-urls')

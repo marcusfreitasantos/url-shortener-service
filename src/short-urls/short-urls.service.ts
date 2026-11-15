@@ -1,5 +1,10 @@
 import 'dotenv/config';
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  NotFoundException,
+} from '@nestjs/common';
 import { ShortUrlsRepository } from './short-urls.repository.js';
 import { randomBytes } from 'crypto';
 
@@ -18,17 +23,18 @@ const isCodeCollision = (error: unknown): boolean => {
 export class ShortUrlService {
   constructor(private readonly repository: ShortUrlsRepository) {}
 
-  async getShortUrl(code: string): Promise<string> {
+  async getShortUrl(code: string): Promise<{
+    originalUrl: string;
+  }> {
     const result = await this.repository.get(code);
 
-    if (!result) {
-      throw new HttpException(
-        'Failed to get short URL',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    if (!result || !result.is_active) {
+      throw new NotFoundException();
     }
 
-    return result.original_url;
+    return {
+      originalUrl: result.original_url,
+    };
   }
 
   async createShortUrl(url: string) {
