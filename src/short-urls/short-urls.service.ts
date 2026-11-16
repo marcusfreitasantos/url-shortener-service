@@ -25,8 +25,10 @@ export class ShortUrlService {
     originalUrl: string;
   }> {
     const result = await this.repository.get(code);
+    const isExpired =
+      result?.expires_at && new Date(result.expires_at) < new Date();
 
-    if (!result || !result.is_active) {
+    if (!result || !result.is_active || isExpired) {
       throw new NotFoundException();
     }
 
