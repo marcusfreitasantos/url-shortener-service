@@ -1,14 +1,18 @@
 import {
-  BadRequestException,
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
-  Param,
   HttpCode,
+  Param,
+  Post,
   Redirect,
 } from '@nestjs/common';
 import { ShortUrlService } from './short-urls.service.js';
+import {
+  type CreateShortUrl,
+  createShortUrlSchema,
+  shortCodeSchema,
+} from './short-url.schema.js';
 
 @Controller()
 export class ShortUrlController {
@@ -16,18 +20,14 @@ export class ShortUrlController {
 
   @Get('/:code')
   @Redirect()
-  async getShortUrl(@Param('code') code: string) {
+  async getShortUrl(@Param('code', { schema: shortCodeSchema }) code: string) {
     const { originalUrl } = await this.shortUrlService.getShortUrl(code);
     return { url: originalUrl, statusCode: 302 };
   }
 
   @Post('/api/short-urls')
   @HttpCode(201)
-  createShortUrl(@Body() body: { url?: string }) {
-    if (typeof body?.url !== 'string' || !body.url.trim()) {
-      throw new BadRequestException('O campo "url" é obrigatório.');
-    }
-
-    return this.shortUrlService.createShortUrl(body.url.trim());
+  createShortUrl(@Body({ schema: createShortUrlSchema }) body: CreateShortUrl) {
+    return this.shortUrlService.createShortUrl(body.url);
   }
 }
