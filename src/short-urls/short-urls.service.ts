@@ -1,18 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
+import { ShortCodeCollisionError } from './short-code-collision.error.js';
 import { ShortUrlsRepository } from './short-urls.repository.js';
 
-const isCodeCollision = (error: unknown): boolean => {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    error.code === '23505' &&
-    'constraint' in error &&
-    error.constraint === 'short_urls_code_key'
-  );
-};
+const MAX_CODE_ATTEMPTS = 5;
 
 @Injectable()
 export class ShortUrlService {
@@ -25,10 +21,8 @@ export class ShortUrlService {
     originalUrl: string;
   }> {
     const result = await this.repository.get(code);
-    const isExpired =
-      result?.expires_at && new Date(result.expires_at) < new Date();
 
-    if (!result || !result.is_active || isExpired) {
+    if (!result) {
       throw new NotFoundException();
     }
 
@@ -38,26 +32,38 @@ export class ShortUrlService {
   }
 
   async createShortUrl(url: string) {
-    const maxAttempts = 5;
+    const ttlDays = this.config.getOrThrow<number>('SHORT_URL_TTL_DAYS');
 
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    for (let attempt = 0; attempt < MAX_CODE_ATTEMPTS; attempt++) {
       const code = randomBytes(9).toString('base64url');
 
       try {
-        await this.repository.create(url, code);
+        await this.repository.create(url, code, ttlDays);
 
         return {
           shortUrl: `${this.config.getOrThrow<string>('DOMAIN_NAME')}/${code}`,
         };
       } catch (error) {
-        const isLastAttempt = attempt === maxAttempts - 1;
+        const canRetry =
+          error instanceof ShortCodeCollisionError &&
+          attempt < MAX_CODE_ATTEMPTS - 1;
 
-        if (!isCodeCollision(error) || isLastAttempt) {
-          throw error;
+        if (canRetry) {
+          continue;
         }
+
+        if (error instanceof ShortCodeCollisionError) {
+          throw new ServiceUnavailableException(
+            'Não foi possível gerar o link curto.',
+          );
+        }
+
+        throw error;
       }
     }
 
-    throw new Error('Could not create short URL');
+    throw new ServiceUnavailableException(
+      'Não foi possível gerar o link curto.',
+    );
   }
 }

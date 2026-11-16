@@ -11,6 +11,7 @@ export const envSchema = z.object({
   DB_PASSWORD: z.string().min(1),
   DB_NAME: z.string().min(1),
   DB_POOL_MAX: z.coerce.number().int().min(1).default(10),
+  SHORT_URL_TTL_DAYS: z.coerce.number().int().min(1).max(3650).default(7),
 });
 
 export type Env = z.infer<typeof envSchema>;

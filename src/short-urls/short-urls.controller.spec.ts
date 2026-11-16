@@ -1,7 +1,9 @@
 import { INestApplication, StandardSchemaValidationPipe } from '@nestjs/common';
-import { APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
+import { configureApp } from '../configure-app.js';
+import { DatabaseExceptionFilter } from '../postgres/database-exception.filter.js';
 import { ShortUrlController } from './short-urls.controller.js';
 import { ShortUrlService } from './short-urls.service.js';
 
@@ -21,10 +23,12 @@ describe('ShortUrlController', () => {
       providers: [
         { provide: ShortUrlService, useValue: shortUrlService },
         { provide: APP_PIPE, useClass: StandardSchemaValidationPipe },
+        { provide: APP_FILTER, useClass: DatabaseExceptionFilter },
       ],
     }).compile();
 
     app = module.createNestApplication();
+    configureApp(app);
     await app.init();
   });
 
@@ -100,5 +104,60 @@ describe('ShortUrlController', () => {
       .expect('Location', 'https://example.com/a');
 
     expect(shortUrlService.getShortUrl).toHaveBeenCalledWith('abcdefghij12');
+  });
+
+  it('keeps the redirect at the root and the api under the prefix', async () => {
+    shortUrlService.getShortUrl.mockResolvedValue({
+      originalUrl: 'https://example.com/a',
+    });
+
+    await request(app.getHttpServer())
+      .post('/short-urls')
+      .send({
+        url: 'https://example.com/a',
+      })
+      .expect(404);
+
+    await request(app.getHttpServer()).get('/api/abcdefghij12').expect(404);
+
+    expect(shortUrlService.getShortUrl).not.toHaveBeenCalled();
+  });
+
+  it('hides database details from connection failures', async () => {
+    shortUrlService.createShortUrl.mockRejectedValue(
+      Object.assign(new Error('connect ECONNREFUSED'), {
+        code: 'ECONNREFUSED',
+        detail: 'password=postgres',
+      }),
+    );
+
+    const response = await request(app.getHttpServer())
+      .post('/api/short-urls')
+      .send({ url: 'https://example.com/a' })
+      .expect(503);
+
+    expect(response.body.message).toBe('Serviço temporariamente indisponível.');
+    expect(JSON.stringify(response.body)).not.toContain('password');
+    expect(JSON.stringify(response.body)).not.toContain('ECONNREFUSED');
+  });
+
+  it('hides unique constraint details when a collision reaches the filter', async () => {
+    shortUrlService.createShortUrl.mockRejectedValue(
+      Object.assign(new Error('duplicate key'), {
+        code: '23505',
+        severity: 'ERROR',
+        constraint: 'short_urls_code_key',
+        detail: 'Key (code)=(abcdefghij12) already exists.',
+      }),
+    );
+
+    const response = await request(app.getHttpServer())
+      .post('/api/short-urls')
+      .send({ url: 'https://example.com/a' })
+      .expect(503);
+
+    expect(response.body.message).toBe('Não foi possível gerar o link curto.');
+    expect(JSON.stringify(response.body)).not.toContain('short_urls_code_key');
+    expect(JSON.stringify(response.body)).not.toContain('already exists');
   });
 });

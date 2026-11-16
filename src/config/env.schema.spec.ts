@@ -14,6 +14,7 @@ describe('envSchema', () => {
       PORT: 3000,
       DB_PORT: 5432,
       DB_POOL_MAX: 10,
+      SHORT_URL_TTL_DAYS: 7,
       DOMAIN_NAME: 'http://localhost:3000',
     });
 
