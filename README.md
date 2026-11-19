@@ -57,6 +57,53 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## Load testing with Grafana k6
+
+Start the database, initialize its schema, and run the API in separate terminals:
+
+```bash
+docker compose up -d postgres
+npm run db:setup
+npm run start:dev
+```
+
+There are three workloads. Test A creates URLs only:
+
+```bash
+docker compose --profile loadtest run --rm k6
+```
+
+At the end of each run, k6 prints its summary to the terminal and saves the
+same text in a timestamped file under `k6/results/`.
+
+For Test B, first fetch existing redirect codes from the API into a dataset.
+The API must already have at least the requested number of active URLs. The
+generated JSON file is ignored by Git and can be recreated with 100, 1,000, or
+10,000 URLs:
+
+```bash
+node k6/seed-redirects.mjs 1000
+K6_SCENARIO=redirects docker compose --profile loadtest run --rm k6
+```
+
+Test C runs a mixed workload, approximately 10% POSTs and 90% GETs, using the
+same prepared dataset:
+
+```bash
+K6_SCENARIO=mixed docker compose --profile loadtest run --rm k6
+```
+
+By default, k6 uses 10 virtual users for 10 seconds and targets
+`http://host.docker.internal:3000`. Override the target and workload with
+environment variables, for example:
+
+```bash
+BASE_URL=http://host.docker.internal:3000 K6_VUS=20 K6_DURATION=2m \
+  K6_SCENARIO=mixed docker compose --profile loadtest run --rm k6
+```
+
+POST-created URLs persist in the database and are not automatically removed.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.

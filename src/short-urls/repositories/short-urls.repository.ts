@@ -7,6 +7,11 @@ export type ActiveShortUrl = {
   original_url: string;
 };
 
+export type ShortUrlObj = {
+  original_url: string;
+  code: string;
+};
+
 @Injectable()
 export class ShortUrlsRepository {
   constructor(private readonly database: PostgresService) {}
@@ -42,5 +47,19 @@ export class ShortUrlsRepository {
     );
 
     return result.rows[0];
+  }
+
+  async list(limit = 10): Promise<ShortUrlObj[][] | undefined> {
+    const result = await this.database.query<ShortUrlObj[]>(
+      `
+      SELECT original_url, code
+      FROM short_urls
+      WHERE is_active = TRUE
+      LIMIT $1
+      `,
+      [limit],
+    );
+
+    return result.rows;
   }
 }

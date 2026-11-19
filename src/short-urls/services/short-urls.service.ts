@@ -6,7 +6,10 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
 import { ShortCodeCollisionError } from '../errors/short-code-collision.error.js';
-import { ShortUrlsRepository } from '../repositories/short-urls.repository.js';
+import {
+  ShortUrlsRepository,
+  type ShortUrlObj,
+} from '../repositories/short-urls.repository.js';
 
 const MAX_CODE_ATTEMPTS = 5;
 
@@ -16,6 +19,22 @@ export class ShortUrlService {
     private readonly repository: ShortUrlsRepository,
     private readonly config: ConfigService,
   ) {}
+
+  async getShortUrlList(limit: number): Promise<{
+    total: number;
+    data: ShortUrlObj[][];
+  }> {
+    const result = await this.repository.list(limit);
+
+    if (!result) {
+      throw new NotFoundException();
+    }
+
+    return {
+      total: result.length,
+      data: result,
+    };
+  }
 
   async getShortUrl(code: string): Promise<{
     originalUrl: string;

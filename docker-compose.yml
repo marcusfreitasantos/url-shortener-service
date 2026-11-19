@@ -15,5 +15,22 @@ services:
       timeout: 5s
       retries: 5
 
+  k6:
+    image: grafana/k6:latest
+    profiles: [loadtest]
+    working_dir: /scripts
+    command: ['run', '/scripts/${K6_SCENARIO:-create-urls}.js']
+    volumes:
+      - ./k6:/scripts:ro
+      - ./k6/results:/results
+    environment:
+      BASE_URL: ${BASE_URL:-http://host.docker.internal:3000}
+      K6_SCENARIO: ${K6_SCENARIO:-create-urls}
+      K6_VUS: ${K6_VUS:-10}
+      K6_DURATION: ${K6_DURATION:-1m}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:

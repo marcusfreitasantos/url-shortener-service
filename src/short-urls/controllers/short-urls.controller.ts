@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Redirect,
+  Query,
 } from '@nestjs/common';
 import { ShortUrlService } from '../services/short-urls.service.js';
 import {
@@ -23,6 +24,13 @@ export class ShortUrlController {
   async getShortUrl(@Param('code', { schema: shortCodeSchema }) code: string) {
     const { originalUrl } = await this.shortUrlService.getShortUrl(code);
     return { url: originalUrl, statusCode: 302 };
+  }
+
+  @Get('short-urls/list')
+  @HttpCode(200)
+  async getShortUrlList(@Query('limit') limit: number) {
+    const shortUrls = await this.shortUrlService.getShortUrlList(limit);
+    return shortUrls;
   }
 
   @Post('short-urls')

@@ -54,6 +54,8 @@ pids
 *.pid
 *.seed
 *.pid.lock
+/k6/data/redirect-codes.json
+/k6/results/
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
