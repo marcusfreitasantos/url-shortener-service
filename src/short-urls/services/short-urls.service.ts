@@ -5,8 +5,8 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
-import { ShortCodeCollisionError } from './short-code-collision.error.js';
-import { ShortUrlsRepository } from './short-urls.repository.js';
+import { ShortCodeCollisionError } from '../errors/short-code-collision.error.js';
+import { ShortUrlsRepository } from '../repositories/short-urls.repository.js';
 
 const MAX_CODE_ATTEMPTS = 5;
 

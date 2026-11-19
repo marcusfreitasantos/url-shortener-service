@@ -3,10 +3,10 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { App } from 'supertest/types.js';
 import { configureApp } from '../src/configure-app.js';
-import { PG_POOL } from '../src/postgres/postgres.constants.js';
+import { PG_POOL } from '../src/postgres/constants/postgres.constants.js';
 import { AppModule } from '../src/app.module.js';
-import { ShortCodeCollisionError } from '../src/short-urls/short-code-collision.error.js';
-import { ShortUrlsRepository } from '../src/short-urls/short-urls.repository.js';
+import { ShortCodeCollisionError } from '../src/short-urls/errors/short-code-collision.error.js';
+import { ShortUrlsRepository } from '../src/short-urls/repositories/short-urls.repository.js';
 
 const env = {
   PORT: '3000',

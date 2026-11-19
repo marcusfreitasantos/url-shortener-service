@@ -1,9 +1,9 @@
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Pool } from 'pg';
-import { envSchema } from '../config/env.schema.js';
-import { PG_POOL } from './postgres.constants.js';
-import { PostgresModule } from './postgres.module.js';
+import { envSchema } from '../../config/env.schema.js';
+import { PG_POOL } from '../constants/postgres.constants.js';
+import { PostgresModule } from '../postgres.module.js';
 import { PostgresService } from './postgres.service.js';
 
 const validEnv = {

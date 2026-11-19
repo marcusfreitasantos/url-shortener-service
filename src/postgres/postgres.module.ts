@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Pool } from 'pg';
-import { PG_POOL } from './postgres.constants.js';
-import { PostgresService } from './postgres.service.js';
+import { PG_POOL } from './constants/postgres.constants.js';
+import { PostgresService } from './services/postgres.service.js';
 
 const createPgPool = (config: ConfigService): Pool =>
   new Pool({

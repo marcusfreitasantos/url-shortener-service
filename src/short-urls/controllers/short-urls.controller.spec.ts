@@ -2,10 +2,10 @@ import { INestApplication, StandardSchemaValidationPipe } from '@nestjs/common';
 import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
-import { configureApp } from '../configure-app.js';
-import { DatabaseExceptionFilter } from '../postgres/database-exception.filter.js';
+import { configureApp } from '../../configure-app.js';
+import { DatabaseExceptionFilter } from '../../postgres/filters/database-exception.filter.js';
+import { ShortUrlService } from '../services/short-urls.service.js';
 import { ShortUrlController } from './short-urls.controller.js';
-import { ShortUrlService } from './short-urls.service.js';
 
 describe('ShortUrlController', () => {
   let app: INestApplication;

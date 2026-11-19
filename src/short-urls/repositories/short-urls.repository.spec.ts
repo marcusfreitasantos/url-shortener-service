@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
-import { PostgresService } from '../postgres/postgres.service.js';
-import { ShortCodeCollisionError } from './short-code-collision.error.js';
+import { PostgresService } from '../../postgres/services/postgres.service.js';
+import { ShortCodeCollisionError } from '../errors/short-code-collision.error.js';
 import { ShortUrlsRepository } from './short-urls.repository.js';
 
 describe('ShortUrlsRepository', () => {

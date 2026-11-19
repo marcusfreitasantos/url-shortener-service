@@ -1,9 +1,9 @@
 import { NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
-import { ShortCodeCollisionError } from './short-code-collision.error.js';
+import { ShortCodeCollisionError } from '../errors/short-code-collision.error.js';
+import { ShortUrlsRepository } from '../repositories/short-urls.repository.js';
 import { ShortUrlService } from './short-urls.service.js';
-import { ShortUrlsRepository } from './short-urls.repository.js';
 
 describe('ShortUrlService', () => {
   let service: ShortUrlService;

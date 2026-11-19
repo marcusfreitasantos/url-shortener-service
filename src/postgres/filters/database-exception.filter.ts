@@ -11,7 +11,7 @@ import {
   isConnectionError,
   isDatabaseError,
   isUniqueViolation,
-} from './database-error.js';
+} from '../errors/database-error.js';
 
 @Catch()
 export class DatabaseExceptionFilter extends BaseExceptionFilter {

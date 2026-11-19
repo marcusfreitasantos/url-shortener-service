@@ -7,12 +7,12 @@ import {
   Post,
   Redirect,
 } from '@nestjs/common';
-import { ShortUrlService } from './short-urls.service.js';
+import { ShortUrlService } from '../services/short-urls.service.js';
 import {
   type CreateShortUrl,
   createShortUrlSchema,
   shortCodeSchema,
-} from './short-url.schema.js';
+} from '../schemas/short-url.schema.js';
 
 @Controller()
 export class ShortUrlController {

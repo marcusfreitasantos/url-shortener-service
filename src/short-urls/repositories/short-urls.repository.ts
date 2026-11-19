@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PostgresService } from '../postgres/postgres.service.js';
-import { isUniqueViolation } from '../postgres/database-error.js';
-import { ShortCodeCollisionError } from './short-code-collision.error.js';
+import { isUniqueViolation } from '../../postgres/errors/database-error.js';
+import { PostgresService } from '../../postgres/services/postgres.service.js';
+import { ShortCodeCollisionError } from '../errors/short-code-collision.error.js';
 
 export type ActiveShortUrl = {
   original_url: string;
