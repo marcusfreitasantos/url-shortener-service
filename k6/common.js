@@ -10,7 +10,7 @@ export const targetUrl = 'https://example.com/k6-load-test';
 
 export const options = {
   vus: Number(__ENV.K6_VUS || 10),
-  duration: __ENV.K6_DURATION || '10s',
+  duration: __ENV.K6_DURATION || '1m',
   thresholds: {
     http_req_failed: ['rate<0.01'],
     http_req_duration: ['p(95)<1000'],

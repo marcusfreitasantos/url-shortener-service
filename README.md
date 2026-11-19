@@ -93,7 +93,7 @@ same prepared dataset:
 K6_SCENARIO=mixed docker compose --profile loadtest run --rm k6
 ```
 
-By default, k6 uses 10 virtual users for 10 seconds and targets
+By default, k6 2.4.0 uses 10 virtual users for 1 minute and targets
 `http://host.docker.internal:3000`. Override the target and workload with
 environment variables, for example:
 
