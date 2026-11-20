@@ -15,6 +15,17 @@ const preAllocatedVUs = positiveInteger('K6_VUS', 10);
 const configuredMaxVUs = optionalPositiveInteger('K6_MAX_VUS');
 
 export const options = {
+  summaryTrendStats: [
+    'avg',
+    'min',
+    'med',
+    'max',
+    'p(90)',
+    'p(95)',
+    'p(99)',
+    'p(99.9)',
+    'count',
+  ],
   scenarios: {
     [profile]: arrivalScenario(),
   },
@@ -86,9 +97,12 @@ export function handleSummary(data) {
   );
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 
+  const outputPath = `/results/${scenario}-${timestamp}-summary`;
+
   return {
     stdout: summary,
-    [`/results/${scenario}-${timestamp}-summary.txt`]: summary,
+    [`${outputPath}.txt`]: summary,
+    [`${outputPath}.json`]: JSON.stringify(data, null, 2),
   };
 }
 

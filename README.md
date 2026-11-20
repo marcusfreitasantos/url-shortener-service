@@ -74,7 +74,8 @@ docker compose --profile loadtest run --rm k6
 ```
 
 At the end of each run, k6 prints its summary to the terminal and saves the
-same text in a timestamped file under `k6/results/`.
+same text and a JSON file under `k6/results/`. The trend stats include p(99)
+and p(99.9).
 
 For Test B, first fetch existing redirect codes from the API into a dataset.
 The API must already have at least the requested number of active URLs. The
