@@ -19,14 +19,22 @@ services:
     image: grafana/k6:2.4.0
     profiles: [loadtest]
     working_dir: /scripts
-    command: ['run', '/scripts/${K6_SCENARIO:-create-urls}.js']
+    command:
+      [
+        'run',
+        '--include-system-env-vars',
+        '/scripts/${K6_SCENARIO:-create-urls}.js',
+      ]
     volumes:
       - ./k6:/scripts:ro
       - ./k6/results:/results
     environment:
       BASE_URL: ${BASE_URL:-http://host.docker.internal:3000}
       K6_SCENARIO: ${K6_SCENARIO:-create-urls}
+      K6_PROFILE: ${K6_PROFILE:-baseline}
+      K6_RATE: ${K6_RATE:-20}
       K6_VUS: ${K6_VUS:-10}
+      K6_MAX_VUS: ${K6_MAX_VUS:-}
       K6_DURATION: ${K6_DURATION:-1m}
     depends_on:
       postgres:

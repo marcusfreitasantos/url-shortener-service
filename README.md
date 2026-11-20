@@ -93,13 +93,15 @@ same prepared dataset:
 K6_SCENARIO=mixed docker compose --profile loadtest run --rm k6
 ```
 
-By default, k6 2.4.0 uses 10 virtual users for 1 minute and targets
-`http://host.docker.internal:3000`. Override the target and workload with
+By default, k6 2.4.0 runs the `baseline` scenario: a constant arrival rate of
+20 iterations per second for 1 minute, with 10 pre-allocated virtual users,
+against `http://host.docker.internal:3000`. `K6_PROFILE=breakpoint` ramps that
+rate across four stages instead. Override the target and workload with
 environment variables, for example:
 
 ```bash
-BASE_URL=http://host.docker.internal:3000 K6_VUS=20 K6_DURATION=2m \
-  K6_SCENARIO=mixed docker compose --profile loadtest run --rm k6
+BASE_URL=http://host.docker.internal:3000 K6_PROFILE=breakpoint K6_RATE=20 \
+  K6_DURATION=1m K6_SCENARIO=mixed docker compose --profile loadtest run --rm k6
 ```
 
 POST-created URLs persist in the database and are not automatically removed.

@@ -8,18 +8,79 @@ export const baseUrl = (__ENV.BASE_URL || 'http://host.docker.internal:3000').re
 );
 export const targetUrl = 'https://example.com/k6-load-test';
 
+const profile = __ENV.K6_PROFILE || 'baseline';
+const duration = __ENV.K6_DURATION || '1m';
+const rate = positiveInteger('K6_RATE', 20);
+const preAllocatedVUs = positiveInteger('K6_VUS', 10);
+const configuredMaxVUs = optionalPositiveInteger('K6_MAX_VUS');
+
 export const options = {
-  vus: Number(__ENV.K6_VUS || 10),
-  duration: __ENV.K6_DURATION || '1m',
+  scenarios: {
+    [profile]: arrivalScenario(),
+  },
   thresholds: {
     http_req_failed: ['rate<0.01'],
     http_req_duration: ['p(95)<1000'],
   },
 };
 
+function positiveInteger(name, fallback) {
+  const raw = __ENV[name];
+  const value = raw === undefined || raw === '' ? fallback : Number(raw);
+  if (!Number.isInteger(value) || value < 1) {
+    throw new Error(`${name} must be a positive integer.`);
+  }
+  return value;
+}
+
+function optionalPositiveInteger(name) {
+  const raw = __ENV[name];
+  if (raw === undefined || raw === '') {
+    return undefined;
+  }
+  return positiveInteger(name);
+}
+
+function maxVUs(fallback) {
+  return Math.max(preAllocatedVUs, configuredMaxVUs ?? fallback);
+}
+
+function arrivalScenario() {
+  if (profile === 'baseline') {
+    return {
+      executor: 'constant-arrival-rate',
+      duration,
+      rate,
+      timeUnit: '1s',
+      preAllocatedVUs,
+      maxVUs: maxVUs(Math.max(preAllocatedVUs, rate * 2)),
+    };
+  }
+
+  if (profile === 'breakpoint') {
+    return {
+      executor: 'ramping-arrival-rate',
+      startRate: Math.max(1, Math.floor(rate / 4)),
+      timeUnit: '1s',
+      preAllocatedVUs,
+      maxVUs: maxVUs(Math.max(preAllocatedVUs, rate * 8)),
+      stages: [
+        { target: rate, duration },
+        { target: rate * 2, duration },
+        { target: rate * 4, duration },
+        { target: rate * 8, duration },
+      ],
+    };
+  }
+
+  throw new Error(
+    `K6_PROFILE must be "baseline" or "breakpoint". Received "${profile}".`,
+  );
+}
+
 export function handleSummary(data) {
   const summary = textSummary(data, { indent: ' ', enableColors: false });
-  const scenario = (__ENV.K6_SCENARIO || 'create-urls').replace(
+  const scenario = `${__ENV.K6_SCENARIO || 'create-urls'}-${profile}`.replace(
     /[^a-zA-Z0-9_-]/g,
     '-',
   );
